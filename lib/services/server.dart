@@ -65,11 +65,13 @@ startGame(Socket client, Socket oponnent) {
     board: List.filled(9, ""),
     turn: false,
     oponnent: connectedUsers[oponnent]!,
+    symbol: "O",
   );
   SharedData oponnentData = SharedData(
     board: List.filled(9, ""),
     turn: true,
     oponnent: connectedUsers[client]!,
+    symbol: "X",
   );
 
   // Send infos to clients

@@ -6,27 +6,35 @@ class SharedData {
   final List<String> board;
   final bool turn;
   final String oponnent;
+  final String symbol;
 
-  SharedData({required this.board, required this.turn, required this.oponnent});
+  SharedData({
+    required this.board,
+    required this.turn,
+    required this.oponnent,
+    required this.symbol,
+  });
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+    return {
       'board': board,
       'turn': turn,
       'oponnent': oponnent,
+      'symbol': symbol,
     };
   }
 
   factory SharedData.fromMap(Map<String, dynamic> map) {
     return SharedData(
-      board: List<String>.from((map['board'] as List<String>)),
-      turn: map['turn'] as bool,
-      oponnent: map['oponnent'] as String,
+      board: List<String>.from(map['board']),
+      turn: map['turn'] ?? false,
+      oponnent: map['oponnent'] ?? '',
+      symbol: map['symbol'] ?? '',
     );
   }
 
   String toJson() => json.encode(toMap());
 
   factory SharedData.fromJson(String source) =>
-      SharedData.fromMap(json.decode(source) as Map<String, dynamic>);
+      SharedData.fromMap(json.decode(source));
 }

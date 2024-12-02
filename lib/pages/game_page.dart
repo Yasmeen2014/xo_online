@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gap/gap.dart';
+import 'package:xo_online/services/client/client_bloc.dart';
+import 'package:xo_online/services/client/client_states.dart';
+import 'package:xo_online/widgets/glitchy_text.dart';
 
 class GamePage extends StatelessWidget {
   const GamePage({super.key});
@@ -7,52 +11,27 @@ class GamePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    List<String> board = ["", "X", "O", "", "X", "X", "O", "X", "O"];
+
+    // Client
+    ClientBloc clientBloc = context.watch<ClientBloc>();
+    ClientStates clientState = clientBloc.state;
+
+    // Get board
+    List<String> board = [];
+    if (clientState is ClientTurnState) {
+      board = clientState.board;
+    } else if (clientState is ClientOponnentTurnState) {
+      board = clientState.board;
+    }
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(
+          SizedBox(
             width: 350,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 155,
-                  child: Text(
-                    "Yousef",
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.blue,
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 40,
-                  child: Center(
-                    child: Text(
-                      "vs",
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(
-                  width: 155,
-                  child: Text(
-                    "Zozo",
-                    textAlign: TextAlign.end,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.red,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            child: clientState is ClientMatchmakingState
+                ? MatchmakingRow(clientBloc: clientBloc)
+                : GameRow(clientBloc: clientBloc),
           ),
           const Gap(5),
           Container(
@@ -88,6 +67,142 @@ class GamePage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class GameRow extends StatelessWidget {
+  const GameRow({
+    super.key,
+    required this.clientBloc,
+  });
+
+  final ClientBloc clientBloc;
+
+  @override
+  Widget build(BuildContext context) {
+    ClientStates clientState = clientBloc.state;
+
+    // Get symbol & oponnent
+    String symbol = "";
+    String oponnent = "";
+    if (clientState is ClientOponnentTurnState) {
+      symbol = clientState.symbol;
+      symbol = clientState.oponnent;
+    } else if (clientState is ClientTurnState) {
+      symbol = clientState.symbol;
+      symbol = clientState.oponnent;
+    }
+    return Row(
+      children: [
+        SizedBox(
+          width: 155,
+          child: Text(
+            symbol == "X" ? clientBloc.getUsername() : oponnent,
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w600,
+              color: Colors.blue,
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 40,
+          child: Center(
+            child: Text(
+              "vs",
+              style: TextStyle(
+                fontSize: 35,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 155,
+          child: Text(
+            symbol == "O" ? clientBloc.getUsername() : oponnent,
+            textAlign: TextAlign.end,
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w600,
+              color: Colors.red,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class MatchmakingRow extends StatelessWidget {
+  const MatchmakingRow({
+    super.key,
+    required this.clientBloc,
+  });
+
+  final ClientBloc clientBloc;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 155,
+          child: Text(
+            clientBloc.getUsername(),
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w600,
+              color: Colors.blue,
+            ),
+          ),
+        ),
+        SizedBox(
+          width: 40,
+          child: Center(
+            child: Text(
+              "vs",
+              style: TextStyle(
+                fontSize: 35,
+                color: Colors.grey.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(
+          width: 155,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: GlitchText(
+              text: "??????",
+              fontSize: 30,
+              customCharacterSet:
+                  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#\$%^&*()_-+=<>?/|}{[]:;,.~`'°²³€¥∞∑≈≠±÷×†‡§•♪♫",
+              glitchFrequency: 5,
+              textStyle: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w600,
+                color: Colors.red,
+              ),
+            ),
+          ),
+        )
+        // SizedBox(
+        //   width: 155,
+        //   child: Text(
+        //     "Zozo",
+        //     textAlign: TextAlign.end,
+        //     style: TextStyle(
+        //       fontSize: 32,
+        //       fontWeight: FontWeight.w600,
+        //       color: Colors.red,
+        //     ),
+        //   ),
+        // ),
+      ],
     );
   }
 }

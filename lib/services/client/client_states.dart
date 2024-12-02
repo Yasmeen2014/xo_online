@@ -13,13 +13,23 @@ class ClientMatchmakingState extends ClientStates {}
 class ClientTurnState extends ClientStates {
   final List<String> board;
   final String oponnent;
+  final String symbol;
 
-  ClientTurnState({required this.board, required this.oponnent});
+  ClientTurnState({
+    required this.board,
+    required this.oponnent,
+    required this.symbol,
+  });
 }
 
 class ClientOponnentTurnState extends ClientStates {
   final List<String> board;
   final String oponnent;
+  final String symbol;
 
-  ClientOponnentTurnState({required this.board, required this.oponnent});
+  ClientOponnentTurnState({
+    required this.board,
+    required this.oponnent,
+    required this.symbol,
+  });
 }

@@ -10,6 +10,11 @@ class ClientBloc extends Cubit<ClientStates> {
   ClientBloc() : super(ClientInitState());
 
   late Socket socket;
+  String username = "";
+
+  String getUsername() {
+    return username != "" ? username : "???";
+  }
 
   connectToServer(String usernameInput) async {
     // Connect to server
@@ -21,6 +26,7 @@ class ClientBloc extends Cubit<ClientStates> {
       "type": "username",
       "username": usernameInput,
     };
+    username = usernameInput;
     socket.write(jsonEncode(data));
 
     // Listen to server
@@ -57,6 +63,7 @@ class ClientBloc extends Cubit<ClientStates> {
       emit(ClientTurnState(
         board: gameData.board,
         oponnent: gameData.oponnent,
+        symbol: gameData.symbol,
       ));
     }
     // If oponnent turn
@@ -65,6 +72,7 @@ class ClientBloc extends Cubit<ClientStates> {
       emit(ClientOponnentTurnState(
         board: gameData.board,
         oponnent: gameData.oponnent,
+        symbol: gameData.symbol,
       ));
     }
   }

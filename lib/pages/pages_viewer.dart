@@ -18,12 +18,11 @@ class PagesViewer extends StatelessWidget {
     ClientBloc clientBloc = context.watch<ClientBloc>();
     ClientStates clientState = clientBloc.state;
 
-    return const HomePage();
-
     if (clientState is ClientConnectedState) {
       return const HomePage();
-    } else if (clientState is ClientTurnState &&
-        clientState is ClientOponnentTurnState) {
+    } else if (clientState is ClientTurnState ||
+        clientState is ClientOponnentTurnState ||
+        clientState is ClientMatchmakingState) {
       return const GamePage();
     } else {
       return const ConnectPage();
