@@ -38,8 +38,10 @@ class ClientBloc extends Cubit<ClientStates> {
   }
 
   handleServerRequests(String request) {
+    print(request);
     // Decode request to map
     Map<String, dynamic> data = jsonDecode(request);
+    print("0000000000000000000000");
 
     // Get request type
     if (data["type"] == "connected") {

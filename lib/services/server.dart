@@ -75,8 +75,8 @@ startGame(Socket client, Socket oponnent) {
   );
 
   // Send infos to clients
-  client.write(jsonEncode(clientData.toJson()));
-  oponnent.write(jsonEncode(oponnentData.toJson()));
+  client.write(clientData.toJson());
+  oponnent.write(oponnentData.toJson());
 
   print(
       "Match between ${connectedUsers[client]} vs ${connectedUsers[oponnent]}");
