@@ -5,14 +5,17 @@ import 'package:xo_online/models/shared_data.dart';
 
 void main() async {
   // Open server
-  final server = await ServerSocket.bind(InternetAddress.anyIPv4, 8080);
-  print('Server listening on port 8080');
+  final server = await ServerSocket.bind(InternetAddress.anyIPv4, 45368);
+  print('Server listening on port 45368');
 
   // Listen for users connection
   await for (Socket socket in server) {
     handleClient(socket);
   }
 }
+
+Map<String, Socket> connectedUsersUToC = {};
+Map<Socket, String> connectedUsersCToU = {};
 
 handleClient(Socket socket) {
   print(
@@ -31,8 +34,6 @@ handleClient(Socket socket) {
   );
 }
 
-Map<String, Socket> connectedUsersUToC = {};
-Map<Socket, String> connectedUsersCToU = {};
 List<Socket> matchmaking = [];
 Map<Socket, SharedData> currentGames = {};
 
@@ -110,13 +111,11 @@ handleMove(Map<String, dynamic> data, Socket client) {
   if (checkWinner(clientGameData.board, clientGameData.symbol)) {
     Map<String, dynamic> clientData = {
       "type": "match_finished",
-      "won": true,
-      "oponnent": connectedUsersCToU[oponnent],
+      "winner": connectedUsersCToU[client],
     };
     Map<String, dynamic> oponnentData = {
       "type": "match_finished",
-      "won": false,
-      "oponnent": connectedUsersCToU[client],
+      "winner": connectedUsersCToU[client],
     };
 
     // Send to users

@@ -1,9 +1,10 @@
+// ignore_for_file: empty_catches
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:xo_online/models/shared_data.dart';
 import 'package:xo_online/services/client/client_states.dart';
 
 class ClientBloc extends Cubit<ClientStates> {
@@ -16,10 +17,27 @@ class ClientBloc extends Cubit<ClientStates> {
     return username != "" ? username : "???";
   }
 
+  Future searchForServerIP() async {
+    List<String> ips = [];
+    for (NetworkInterface networkInterface in await NetworkInterface.list()) {
+      for (InternetAddress internetAddress in networkInterface.addresses) {
+        ips.add(internetAddress.address);
+      }
+    }
+
+    for (String ip in ips) {
+      try {
+        server = await Socket.connect(ip, 45368);
+        return;
+      } catch (e) {}
+    }
+  }
+
   connectToServer(String usernameInput) async {
     // Connect to server
-    server = await Socket.connect('192.168.8.106', 8080);
-    log('Connected to server at 127.0.0.1:8080');
+    await searchForServerIP();
+
+    log('Connected to server at ${server.address.address}:8080');
 
     // Register username
     Map<String, dynamic> data = {
@@ -51,6 +69,10 @@ class ClientBloc extends Cubit<ClientStates> {
     } else if (data["type"] == "game") {
       print("Match found!");
       handleGame(data);
+    } else if (data["type"] == "match_finished") {
+      emit(
+        ClientMatchFinishedState(winner: data["winner"]),
+      );
     }
   }
 

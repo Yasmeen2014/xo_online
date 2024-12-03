@@ -6,6 +6,8 @@ class ClientInitState extends ClientStates {}
 
 class ClientConnectedState extends ClientStates {}
 
+class ClientServerClosed extends ClientStates {}
+
 // G A M E
 
 class ClientMatchmakingState extends ClientStates {}
@@ -31,5 +33,13 @@ class ClientOponnentTurnState extends ClientStates {
     required this.board,
     required this.oponnent,
     required this.symbol,
+  });
+}
+
+class ClientMatchFinishedState extends ClientStates {
+  final String winner;
+
+  ClientMatchFinishedState({
+    required this.winner,
   });
 }

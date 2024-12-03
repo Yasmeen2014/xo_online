@@ -22,7 +22,8 @@ class PagesViewer extends StatelessWidget {
       return const HomePage();
     } else if (clientState is ClientTurnState ||
         clientState is ClientOponnentTurnState ||
-        clientState is ClientMatchmakingState) {
+        clientState is ClientMatchmakingState ||
+        clientState is ClientMatchFinishedState) {
       return const GamePage();
     } else {
       return const ConnectPage();

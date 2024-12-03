@@ -31,42 +31,76 @@ class GamePage extends StatelessWidget {
             width: 350,
             child: clientState is ClientMatchmakingState
                 ? MatchmakingRow(clientBloc: clientBloc)
-                : GameRow(clientBloc: clientBloc),
+                : clientState is ClientMatchFinishedState
+                    ? const SizedBox()
+                    : GameRow(clientBloc: clientBloc),
           ),
           const Gap(5),
-          Container(
-            height: 2,
-            width: 320,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade400,
-              borderRadius: BorderRadius.circular(360),
-            ),
-          ),
-          const Gap(40),
-          Center(
-            child: SizedBox(
-              width: 350,
-              height: 380,
-              child: GridView.builder(
-                itemCount: 9,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
+          clientState is ClientMatchFinishedState
+              ? const SizedBox()
+              : Container(
+                  height: 2,
+                  width: 320,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(360),
+                  ),
                 ),
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(2.5),
-                    child: Cell(
-                      clientBloc: clientBloc,
-                      colorScheme: colorScheme,
-                      index: index,
-                      symbol: board[index],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
+          const Gap(40),
+          clientState is ClientMatchFinishedState
+              ? Text(
+                  "${clientState.winner} Won!",
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue,
+                  ),
+                )
+              : Board(
+                  clientBloc: clientBloc,
+                  colorScheme: colorScheme,
+                  board: board),
         ],
+      ),
+    );
+  }
+}
+
+class Board extends StatelessWidget {
+  const Board({
+    super.key,
+    required this.clientBloc,
+    required this.colorScheme,
+    required this.board,
+  });
+
+  final ClientBloc clientBloc;
+  final ColorScheme colorScheme;
+  final List board;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        width: 350,
+        height: 380,
+        child: GridView.builder(
+          itemCount: 9,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+          ),
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.all(2.5),
+              child: Cell(
+                clientBloc: clientBloc,
+                colorScheme: colorScheme,
+                index: index,
+                symbol: board[index],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -226,7 +260,10 @@ class Cell extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (clientBloc.state is ClientOponnentTurnState && symbol == "") {
+        if (clientBloc.state is ClientOponnentTurnState) {
+          return;
+        }
+        if (symbol != "") {
           return;
         }
         clientBloc.makeMove(index);
