@@ -17,7 +17,7 @@ class GamePage extends StatelessWidget {
     ClientStates clientState = clientBloc.state;
 
     // Get board
-    List<String> board = [];
+    List board = ["", "", "", "", "", "", "", "", ""];
     if (clientState is ClientTurnState) {
       board = clientState.board;
     } else if (clientState is ClientOponnentTurnState) {
@@ -46,7 +46,7 @@ class GamePage extends StatelessWidget {
           Center(
             child: SizedBox(
               width: 350,
-              height: 350,
+              height: 380,
               child: GridView.builder(
                 itemCount: 9,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -56,6 +56,7 @@ class GamePage extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.all(2.5),
                     child: Cell(
+                      clientBloc: clientBloc,
                       colorScheme: colorScheme,
                       index: index,
                       symbol: board[index],
@@ -88,10 +89,10 @@ class GameRow extends StatelessWidget {
     String oponnent = "";
     if (clientState is ClientOponnentTurnState) {
       symbol = clientState.symbol;
-      symbol = clientState.oponnent;
+      oponnent = clientState.oponnent;
     } else if (clientState is ClientTurnState) {
       symbol = clientState.symbol;
-      symbol = clientState.oponnent;
+      oponnent = clientState.oponnent;
     }
     return Row(
       children: [
@@ -210,11 +211,13 @@ class MatchmakingRow extends StatelessWidget {
 class Cell extends StatelessWidget {
   const Cell({
     super.key,
+    required this.clientBloc,
     required this.colorScheme,
     required this.symbol,
     required this.index,
   });
 
+  final ClientBloc clientBloc;
   final ColorScheme colorScheme;
   final String symbol;
   final int index;
@@ -222,6 +225,12 @@ class Cell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTap: () {
+        if (clientBloc.state is ClientOponnentTurnState && symbol == "") {
+          return;
+        }
+        clientBloc.makeMove(index);
+      },
       child: Container(
         width: 100,
         height: 100,

@@ -9,7 +9,7 @@ import 'package:xo_online/services/client/client_states.dart';
 class ClientBloc extends Cubit<ClientStates> {
   ClientBloc() : super(ClientInitState());
 
-  late Socket socket;
+  late Socket server;
   String username = "";
 
   String getUsername() {
@@ -18,7 +18,7 @@ class ClientBloc extends Cubit<ClientStates> {
 
   connectToServer(String usernameInput) async {
     // Connect to server
-    socket = await Socket.connect('127.0.0.1', 8080);
+    server = await Socket.connect('192.168.8.106', 8080);
     log('Connected to server at 127.0.0.1:8080');
 
     // Register username
@@ -27,10 +27,10 @@ class ClientBloc extends Cubit<ClientStates> {
       "username": usernameInput,
     };
     username = usernameInput;
-    socket.write(jsonEncode(data));
+    server.write(jsonEncode(data));
 
     // Listen to server
-    socket.listen(
+    server.listen(
       (List<int> request) => handleServerRequests(
         String.fromCharCodes(request),
       ),
@@ -38,10 +38,8 @@ class ClientBloc extends Cubit<ClientStates> {
   }
 
   handleServerRequests(String request) {
-    print(request);
     // Decode request to map
     Map<String, dynamic> data = jsonDecode(request);
-    print("0000000000000000000000");
 
     // Get request type
     if (data["type"] == "connected") {
@@ -51,38 +49,46 @@ class ClientBloc extends Cubit<ClientStates> {
       log("Searching for a match...");
       emit(ClientMatchmakingState());
     } else if (data["type"] == "game") {
+      print("Match found!");
       handleGame(data);
     }
   }
 
   handleGame(Map<String, dynamic> data) {
     // Convert data to Shared Data class
-    SharedData gameData = SharedData.fromMap(data);
 
     // If your turn
-    if (gameData.turn) {
+    if (data["turn"]) {
       log("My turn");
       emit(ClientTurnState(
-        board: gameData.board,
-        oponnent: gameData.oponnent,
-        symbol: gameData.symbol,
+        board: data["board"],
+        oponnent: data["oponnent"],
+        symbol: data["symbol"],
       ));
     }
     // If oponnent turn
     else {
       log("Oponnent turn");
       emit(ClientOponnentTurnState(
-        board: gameData.board,
-        oponnent: gameData.oponnent,
-        symbol: gameData.symbol,
+        board: data["board"],
+        oponnent: data["oponnent"],
+        symbol: data["symbol"],
       ));
     }
+  }
+
+  makeMove(int index) {
+    Map<String, dynamic> request = {
+      "type": "move",
+      "index": index,
+    };
+    server.write(jsonEncode(request));
   }
 
   searchForMatch() {
     Map<String, dynamic> data = {
       "type": "matchmaking",
     };
-    socket.write(jsonEncode(data));
+    server.write(jsonEncode(data));
   }
 }

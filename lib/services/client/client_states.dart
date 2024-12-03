@@ -11,7 +11,7 @@ class ClientConnectedState extends ClientStates {}
 class ClientMatchmakingState extends ClientStates {}
 
 class ClientTurnState extends ClientStates {
-  final List<String> board;
+  final List board;
   final String oponnent;
   final String symbol;
 
@@ -23,7 +23,7 @@ class ClientTurnState extends ClientStates {
 }
 
 class ClientOponnentTurnState extends ClientStates {
-  final List<String> board;
+  final List board;
   final String oponnent;
   final String symbol;
 

@@ -31,14 +31,16 @@ handleClient(Socket socket) {
   );
 }
 
-Map<Socket, String> connectedUsers = {};
+Map<String, Socket> connectedUsersUToC = {};
+Map<Socket, String> connectedUsersCToU = {};
 List<Socket> matchmaking = [];
 Map<Socket, SharedData> currentGames = {};
 
 handleClientRequest(Socket client, String request) {
   Map<String, dynamic> data = jsonDecode(request);
   if (data["type"] == "username") {
-    connectedUsers[client] = data["username"];
+    connectedUsersCToU[client] = data["username"];
+    connectedUsersUToC[data["username"]] = client;
     Map<String, dynamic> request = {
       "type": "connected",
     };
@@ -54,30 +56,99 @@ handleClientRequest(Socket client, String request) {
         "type": "match_searching",
       };
       client.write(jsonEncode(data));
-      print("Matchmaking ${connectedUsers[client]}");
+      print("Matchmaking ${connectedUsersCToU[client]}");
     }
+  } else if (data["type"] == "move") {
+    handleMove(data, client);
   }
 }
 
 startGame(Socket client, Socket oponnent) {
   // Shared data
   SharedData clientData = SharedData(
-    board: List.filled(9, ""),
+    type: "game",
+    board: ["", "", "", "", "", "", "", "", ""],
     turn: false,
-    oponnent: connectedUsers[oponnent]!,
+    oponnent: connectedUsersCToU[oponnent]!,
     symbol: "O",
   );
   SharedData oponnentData = SharedData(
-    board: List.filled(9, ""),
+    type: "game",
+    board: ["", "", "", "", "", "", "", "", ""],
     turn: true,
-    oponnent: connectedUsers[client]!,
+    oponnent: connectedUsersCToU[client]!,
     symbol: "X",
   );
+
+  currentGames[client] = clientData;
+  currentGames[oponnent] = oponnentData;
 
   // Send infos to clients
   client.write(clientData.toJson());
   oponnent.write(oponnentData.toJson());
 
   print(
-      "Match between ${connectedUsers[client]} vs ${connectedUsers[oponnent]}");
+      "Match between ${connectedUsersCToU[client]} vs ${connectedUsersCToU[oponnent]}");
+}
+
+handleMove(Map<String, dynamic> data, Socket client) {
+  SharedData clientGameData = currentGames[client]!;
+
+  // Get oponnent & his data
+  Socket oponnent = connectedUsersUToC[clientGameData.oponnent]!;
+  SharedData oponnentGameData = currentGames[oponnent]!;
+
+  // Update board
+  clientGameData.board[data["index"]] = clientGameData.symbol;
+  oponnentGameData.board[data["index"]] = clientGameData.symbol;
+
+  // Switch turns
+  clientGameData.turn = false;
+  oponnentGameData.turn = true;
+
+  // Check if the client won
+  if (checkWinner(clientGameData.board, clientGameData.symbol)) {
+    Map<String, dynamic> clientData = {
+      "type": "match_finished",
+      "won": true,
+      "oponnent": connectedUsersCToU[oponnent],
+    };
+    Map<String, dynamic> oponnentData = {
+      "type": "match_finished",
+      "won": false,
+      "oponnent": connectedUsersCToU[client],
+    };
+
+    // Send to users
+    client.write(jsonEncode(clientData));
+    oponnent.write(jsonEncode(oponnentData));
+
+    return;
+  }
+
+  client.write(clientGameData.toJson());
+  connectedUsersUToC[clientGameData.oponnent]!.write(oponnentGameData.toJson());
+}
+
+bool checkWinner(List board, String player) {
+  List<List<int>> winningCombos = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+
+  // Check each winning combination
+  for (var combo in winningCombos) {
+    if (board[combo[0]] == player &&
+        board[combo[1]] == player &&
+        board[combo[2]] == player) {
+      return true;
+    }
+  }
+  return false;
 }

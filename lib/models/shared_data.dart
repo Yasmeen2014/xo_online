@@ -2,13 +2,14 @@
 import 'dart:convert';
 
 class SharedData {
-  final String type = "game";
-  final List<String> board;
-  final bool turn;
+  final String type;
+  final List board;
+  bool turn;
   final String oponnent;
   final String symbol;
 
   SharedData({
+    required this.type,
     required this.board,
     required this.turn,
     required this.oponnent,
@@ -16,7 +17,8 @@ class SharedData {
   });
 
   Map<String, dynamic> toMap() {
-    return {
+    return <String, dynamic>{
+      'type': type,
       'board': board,
       'turn': turn,
       'oponnent': oponnent,
@@ -26,15 +28,16 @@ class SharedData {
 
   factory SharedData.fromMap(Map<String, dynamic> map) {
     return SharedData(
-      board: List<String>.from(map['board']),
-      turn: map['turn'] ?? false,
-      oponnent: map['oponnent'] ?? '',
-      symbol: map['symbol'] ?? '',
+      type: map['type'] as String,
+      board: map['board'] as List,
+      turn: map['turn'] as bool,
+      oponnent: map['oponnent'] as String,
+      symbol: map['symbol'] as String,
     );
   }
 
   String toJson() => json.encode(toMap());
 
   factory SharedData.fromJson(String source) =>
-      SharedData.fromMap(json.decode(source));
+      SharedData.fromMap(json.decode(source) as Map<String, dynamic>);
 }
